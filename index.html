@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
+    <title>Advanced Chatbot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,7 +15,7 @@
             margin: 0;
         }
         #chat-container {
-            width: 400px;
+            width: 500px;
             max-width: 100%;
             background: #fff;
             border-radius: 10px;
@@ -24,7 +24,7 @@
             flex-direction: column;
         }
         #chat-box {
-            height: 300px;
+            height: 400px;
             overflow-y: scroll;
             padding: 10px;
             border-bottom: 1px solid #ddd;
@@ -48,6 +48,9 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #user-input button:hover {
+            background: #0056b3;
+        }
         .message {
             margin: 5px 0;
             padding: 10px;
@@ -61,6 +64,34 @@
             background: #e1e1e1;
             align-self: flex-start;
         }
+        #history-container {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: #f9f9f9;
+        }
+        #history-container button {
+            border: none;
+            background: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #history-container button:hover {
+            background: #0056b3;
+        }
+        #history {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        #history .history-message {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+        }
     </style>
 </head>
 <body>
@@ -72,11 +103,29 @@
             <input type="text" id="message" placeholder="Type your message here...">
             <button onclick="sendMessage()">Send</button>
         </div>
+        <div id="history-container">
+            <button onclick="toggleHistory()">Toggle History</button>
+            <div id="history" style="display: none;">
+                <!-- Chat history will appear here -->
+            </div>
+        </div>
     </div>
 
     <script>
         const chatBox = document.getElementById('chat-box');
         const messageInput = document.getElementById('message');
+        const historyContainer = document.getElementById('history');
+        const historyButton = document.querySelector('#history-container button');
+
+        const botResponses = {
+            'hi': 'Hello! How can I help you today?',
+            'how are you?': 'I am just a bot, but I am here to help you!',
+            'bye': 'Goodbye! Have a great day!',
+            'weather': 'I am not sure about the weather, but I can help with other queries.',
+            'help': 'You can ask me about various topics like weather, time, or just chat!',
+        };
+
+        let messageHistory = [];
 
         function sendMessage() {
             const message = messageInput.value.trim();
@@ -85,10 +134,16 @@
             // Append user message
             appendMessage(message, 'user');
 
+            // Save to history
+            messageHistory.push({ text: message, sender: 'user' });
+
             // Simulate bot response
             setTimeout(() => {
                 const botResponse = getBotResponse(message);
                 appendMessage(botResponse, 'bot');
+
+                // Save bot response to history
+                messageHistory.push({ text: botResponse, sender: 'bot' });
             }, 500);
 
             messageInput.value = '';
@@ -103,13 +158,29 @@
         }
 
         function getBotResponse(userMessage) {
-            // Simple response logic
-            const responses = {
-                'hi': 'Hello!',
-                'how are you?': 'I am good, thank you!',
-                'bye': 'Goodbye!',
-            };
-            return responses[userMessage.toLowerCase()] || 'I am not sure how to respond to that.';
+            return botResponses[userMessage.toLowerCase()] || 'I am not sure how to respond to that.';
+        }
+
+        function toggleHistory() {
+            if (historyContainer.style.display === 'none') {
+                historyContainer.style.display = 'block';
+                updateHistory();
+            } else {
+                historyContainer.style.display = 'none';
+            }
+        }
+
+        function updateHistory() {
+            historyContainer.innerHTML = '<button onclick="toggleHistory()">Toggle History</button>';
+            const historyContent = document.createElement('div');
+            historyContent.id = 'history';
+            messageHistory.forEach(msg => {
+                const historyMessageDiv = document.createElement('div');
+                historyMessageDiv.classList.add('history-message');
+                historyMessageDiv.textContent = `[${msg.sender}] ${msg.text}`;
+                historyContent.appendChild(historyMessageDiv);
+            });
+            historyContainer.appendChild(historyContent);
         }
 
         // Handle Enter key
@@ -118,6 +189,9 @@
                 sendMessage();
             }
         });
+
+        // Welcome message
+        appendMessage('Welcome to the chatbot! Type "help" to see what I can do.', 'bot');
     </script>
 </body>
 </html>
